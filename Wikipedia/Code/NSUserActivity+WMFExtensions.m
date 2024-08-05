@@ -74,6 +74,29 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
     return activity;
 }
 
++ (instancetype)wmf_placeWithCoordinatesWithURL:(NSURL *)activityURL {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:activityURL resolvingAgainstBaseURL:NO];
+    
+    double latitude = 0.0;
+    double longitude = 0.0;
+    for (NSURLQueryItem *item in components.queryItems) {
+        if ([item.name isEqualToString:@"latitude"]) {
+            latitude = item.value.doubleValue;
+        } else if ([item.name isEqualToString:@"longitude"]) {
+            longitude = item.value.doubleValue;
+        }
+    }
+    NSUserActivity *activity = [self wmf_pageActivityWithName:@"Places"];
+    if (latitude != 0.0 && longitude != 0.0) {
+        activity.userInfo = @{@"WMFCoordinates": @{
+            @"WMFLatitude": [NSNumber numberWithDouble:latitude],
+            @"WMFLongitude": [NSNumber numberWithDouble:longitude]
+            }
+        };
+    }
+    return activity;
+}
+
 + (instancetype)wmf_exploreViewActivity {
     NSUserActivity *activity = [self wmf_pageActivityWithName:@"Explore"];
     return activity;
@@ -125,6 +148,8 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
         return [self wmf_exploreViewActivity];
     } else if ([url.host isEqualToString:@"places"]) {
         return [self wmf_placesActivityWithURL:url];
+    } else if ([url.host isEqualToString:@"placeWithCoordinates"]) {
+        return [self wmf_placeWithCoordinatesWithURL:url];
     } else if ([url.host isEqualToString:@"saved"]) {
         return [self wmf_savedPagesViewActivity];
     } else if ([url.host isEqualToString:@"history"]) {
@@ -226,6 +251,8 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
         } else {
             return WMFUserActivityTypeSettings;
         }
+    } else if (self.userInfo[@"WMFCoordinates"] != nil) {
+        return WMFUserActivityTypePlaceWithCoordinates;
     } else if ([self wmf_contentURL]) {
         return WMFUserActivityTypeContent;
     } else if ([self.activityType isEqualToString:CSQueryContinuationActionType]) {
@@ -264,6 +291,17 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
     }
 }
 
+- (CLLocationCoordinate2D)wmf_coordinates {
+    NSDictionary *coordinates = [self.userInfo objectForKey:@"WMFCoordinates"];
+    if (coordinates) {
+        NSString *latitude = [coordinates objectForKey:@"WMFLatitude"];
+        NSString *longitude = [coordinates objectForKey:@"WMFLongitude"];
+        CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake([latitude doubleValue], [longitude doubleValue]);
+        return coordinate;
+    }
+    return kCLLocationCoordinate2DInvalid;
+}
+
 - (NSURL *)wmf_contentURL {
     return self.userInfo[@"WMFURL"];
 }
@@ -292,6 +330,9 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
             break;
         case WMFUserActivityTypePlaces:
             host = @"places";
+            break;
+        case WMFUserActivityTypePlaceWithCoordinates:
+            host = @"placewithcoordinates";
             break;
         case WMFUserActivityTypeExplore:
         default:

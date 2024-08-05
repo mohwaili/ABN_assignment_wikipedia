@@ -830,6 +830,11 @@ class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverV
     
     // MARK: - Display Actions
     
+    @objc public func updateMapWith(_ coordinates: CLLocationCoordinate2D) {
+        guard isViewLoaded else { return }
+        zoomAndPanMapView(toLocation: CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude))
+    }
+    
     func deselectAllAnnotations() {
         for annotation in mapView.selectedAnnotations {
             mapView.deselectAnnotation(annotation, animated: true)

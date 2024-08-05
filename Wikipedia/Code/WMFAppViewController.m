@@ -1161,6 +1161,7 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
         case WMFUserActivityTypeAppearanceSettings:
         case WMFUserActivityTypeNotificationSettings:
         case WMFUserActivityTypeContent:
+        case WMFUserActivityTypePlaceWithCoordinates:
             return YES;
         case WMFUserActivityTypeSearchResults:
             return [activity wmf_searchTerm] != nil;
@@ -1211,6 +1212,14 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
                 [[self placesViewController] updateViewModeToMap];
                 [[self placesViewController] showArticleURL:articleURL];
             }
+        } break;
+        case WMFUserActivityTypePlaceWithCoordinates: {
+            [self dismissPresentedViewControllers];
+            [self setSelectedIndex:WMFAppTabTypePlaces];
+            [self.currentTabNavigationController popToRootViewControllerAnimated:animated];
+            CLLocationCoordinate2D coordinates = activity.wmf_coordinates;
+            [self.placesViewController updateViewModeToMap];
+            [self.placesViewController updateMapWith:coordinates];
         } break;
         case WMFUserActivityTypeContent: {
             [self dismissPresentedViewControllers];

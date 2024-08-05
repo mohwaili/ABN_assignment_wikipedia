@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <CoreLocation/CoreLocation.h>
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, WMFUserActivityType) {
@@ -12,7 +13,8 @@ typedef NS_ENUM(NSUInteger, WMFUserActivityType) {
     WMFUserActivityTypeAppearanceSettings,
     WMFUserActivityTypeNotificationSettings,
     WMFUserActivityTypeContent,
-    WMFUserActivityTypeLink
+    WMFUserActivityTypeLink,
+    WMFUserActivityTypePlaceWithCoordinates
 };
 
 extern NSString *const WMFNavigateToActivityNotification;
@@ -45,6 +47,7 @@ extern NSString *const WMFNavigateToActivityNotification;
 - (nullable NSString *)wmf_searchTerm;
 
 - (nullable NSURL *)wmf_linkURL;
+- (CLLocationCoordinate2D)wmf_coordinates;
 
 - (NSURL *)wmf_contentURL;
 
